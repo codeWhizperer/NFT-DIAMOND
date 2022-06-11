@@ -23,7 +23,9 @@ export async function deployDiamond() {
   const Diamond = await ethers.getContractFactory("Diamond");
   const diamond = await Diamond.deploy(
     contractOwner.address,
-    diamondCutFacet.address
+    diamondCutFacet.address,
+    "CodeWhizperer",
+    "CWP NFT"
   );
   await diamond.deployed();
   console.log("Diamond deployed:", diamond.address);
@@ -39,7 +41,7 @@ export async function deployDiamond() {
   // deploy facets
   console.log("");
   console.log("Deploying facets");
-  const FacetNames = ["DiamondLoupeFacet", "OwnershipFacet"];
+  const FacetNames = ["DiamondLoupeFacet", "OwnershipFacet","NFT"];
   const cut = [];
   for (const FacetName of FacetNames) {
     const Facet = await ethers.getContractFactory(FacetName);
@@ -67,12 +69,15 @@ export async function deployDiamond() {
   tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall);
   console.log("Diamond cut tx: ", tx.hash);
   receipt = await tx.wait();
+  const nft = await ethers.getContractAt("NFT",diamond.address)
+console.log(await nft.name())
   if (!receipt.status) {
     throw Error(`Diamond upgrade failed: ${tx.hash}`);
   }
   console.log("Completed diamond cut");
   DiamondAddress = diamond.address;
 }
+
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
